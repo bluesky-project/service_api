@@ -22,8 +22,7 @@ public class StockController {
 		return stockService.getStockInfo(prdTitle, optTitle);
 	}
 	
-	//@PostMapping("/decrease")
-	@GetMapping("/decrease")
+	@PostMapping("/decrease")
 	public Object decrease(
 			@RequestParam("prdTitle") String prdTitle,
 			@RequestParam("optTitle") String optTitle,
@@ -31,8 +30,7 @@ public class StockController {
 		return stockService.countProcess(prdTitle, optTitle, amount, true);
 	}
 	
-	//@PostMapping("/increase")
-	@GetMapping("/increase")
+	@PostMapping("/increase")
 	public Object increase(
 			@RequestParam("prdTitle") String prdTitle,
 			@RequestParam("optTitle") String optTitle,
