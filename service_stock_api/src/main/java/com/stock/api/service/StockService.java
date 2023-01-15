@@ -6,38 +6,36 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 import org.redisson.api.RLock;
-import org.redisson.api.RedissonClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
+
+import com.stock.config.RedisConfig;
 import com.stock.api.repository.StockRepository;
+import com.stock.model.DeliveryStockInfo;
 
 @Service
 public class StockService {
-	private RedissonClient redissonClient;
+	@Autowired
+	private RedisConfig redisConfig;
 	
-	public StockService(RedissonClient redissonClient) {
-		this.redissonClient = redissonClient;
-	}
-
 	@Autowired
 	private StockRepository stockRepository;
 	
-	public List<Map<String, Object>> getStockInfo(String prdTitle, String optTitle){
-		return stockRepository.getStockInfo(prdTitle, optTitle);
+	public List<DeliveryStockInfo> getStockInfo(DeliveryStockInfo deliveryStockInfo){
+		return stockRepository.getStockInfo(deliveryStockInfo);
 	}
 	
-	public Map<String, Object> countProcess(String prdTitle, String optTitle, Long amount, boolean isType) {
-		String lockName = prdTitle + ":lock";
-        RLock lock = redissonClient.getLock(lockName);
-        
+	public Map<String, Object> countProcess(DeliveryStockInfo deliveryStockInfo, boolean isType) {
+		String lockName = deliveryStockInfo.getPrdTitle() + ":lock";
+		RLock lock = redisConfig.redissonClient().getLock(lockName);
         Map<String, Object> result = new HashMap<>();
         
         try {
             if (lock.tryLock(10, 3, TimeUnit.SECONDS)) {
             	try {
-            		result = isType ? decreaseCount(prdTitle, optTitle, amount) : increaseCount(prdTitle, optTitle, amount);
+            		result = isType ? decreaseCount(deliveryStockInfo) : increaseCount(deliveryStockInfo);
 				} catch (Exception e) {
 					e.printStackTrace();
 				} finally {
@@ -54,15 +52,15 @@ public class StockService {
     }
 	
 	@Transactional(propagation = Propagation.REQUIRES_NEW)
-    public Map<String, Object> decreaseCount(String prdTitle, String optTitle, Long amount) {
+    public Map<String, Object> decreaseCount(DeliveryStockInfo deliveryStockInfo) {
 		Map<String, Object> result = new HashMap<>();
 		boolean isSuccess = false;
 		String message = "수량이 부족합니다.";
 		
-		Long count = stockRepository.getStockCount(prdTitle, optTitle);
+		Long count = stockRepository.getStockCount(deliveryStockInfo);
 		
-		if(count - amount >= 0) {
-			int stockAmount = stockRepository.stockDecrease(prdTitle, optTitle, amount);
+		if(count - deliveryStockInfo.getAmount() >= 0) {
+			int stockAmount = stockRepository.stockDecrease(deliveryStockInfo);
 			isSuccess = true;
 			message = "성공되었습니다.";
 			
@@ -78,12 +76,12 @@ public class StockService {
     }
 	
 	@Transactional(propagation = Propagation.REQUIRES_NEW)
-    public Map<String, Object> increaseCount(String prdTitle, String optTitle, Long amount) {
+    public Map<String, Object> increaseCount(DeliveryStockInfo deliveryStockInfo) {
 		Map<String, Object> result = new HashMap<>();
 		boolean isSuccess = true;
 		String message = "성공되었습니다.";
 		
-		int stockAmount = stockRepository.stockIncrease(prdTitle, optTitle, amount);
+		int stockAmount = stockRepository.stockIncrease(deliveryStockInfo);
 		
 		if(stockAmount < 0) {
 			isSuccess = false;

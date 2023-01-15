@@ -5,6 +5,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import com.stock.api.service.StockService;
+import com.stock.model.DeliveryStockInfo;
 
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
@@ -21,11 +22,16 @@ public class stockServiceTest {
         int threadCount = 100;
         ExecutorService executorService = Executors.newFixedThreadPool(32);
         CountDownLatch latch = new CountDownLatch(threadCount);
+        
+        DeliveryStockInfo deliveryStockMap = new DeliveryStockInfo();
+		deliveryStockMap.setPrdTitle("prd-a");
+		deliveryStockMap.setOptTitle("opt-aa");
+		deliveryStockMap.setAmount(1L);
 
         for (int i = 0; i < threadCount; i++) {
             executorService.submit(() -> {
                 try {
-                	stockService.countProcess("prd-a", "opt-aa", 1L, false);
+                	stockService.countProcess(deliveryStockMap, false);
                 } finally {
                     latch.countDown();
                 }
@@ -41,11 +47,16 @@ public class stockServiceTest {
         int threadCount = 100;
         ExecutorService executorService = Executors.newFixedThreadPool(32);
         CountDownLatch latch = new CountDownLatch(threadCount);
+        
+        DeliveryStockInfo deliveryStockMap = new DeliveryStockInfo();
+		deliveryStockMap.setPrdTitle("prd-a");
+		deliveryStockMap.setOptTitle("opt-aa");
+		deliveryStockMap.setAmount(1L);
 
         for (int i = 0; i < threadCount; i++) {
             executorService.submit(() -> {
                 try {
-                	stockService.countProcess("prd-a", "opt-aa", 1L, true);
+                	stockService.countProcess(deliveryStockMap, true);
                 } finally {
                     latch.countDown();
                 }

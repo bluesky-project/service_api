@@ -2,7 +2,14 @@
 
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.stock">
-	<select id="getStockInfo" parameterType="map" resultType="map">
+	<resultMap id="deliveryStockMap" type="com.stock.model.DeliveryStockInfo">
+		<result property="stockInfoSrl" column="stock_info_srl"/>
+		<result property="prdTitle" column="prd_title"/>
+		<result property="optTitle" column="opt_title"/>
+		<result property="amount" column="amount"/>
+	</resultMap>
+	
+	<select id="getStockInfo" parameterType="com.stock.model.DeliveryStockInfo" resultMap="deliveryStockMap">
 		select *
 		from stock_info 
 		where prd_title = #{prdTitle}
@@ -11,21 +18,21 @@
 		</if>
 	</select>
 	
-	<select id="getStockCount" parameterType="map" resultType="long">
+	<select id="getStockCount" parameterType="com.stock.model.DeliveryStockInfo" resultType="long">
 		select amount
 		from stock_info 
 		where prd_title = #{prdTitle}
 		and opt_title = #{optTitle}
 	</select>
 	
-	<update id="stockDecrease" parameterType="map">
+	<update id="stockDecrease" parameterType="com.stock.model.DeliveryStockInfo">
 		update stock_info
 		set amount = amount - #{amount}
 		where prd_title = #{prdTitle}
 		and opt_title = #{optTitle} 
 	</update>
 	
-	<update id="stockIncrease" parameterType="map">
+	<update id="stockIncrease" parameterType="com.stock.model.DeliveryStockInfo">
 		update stock_info
 		set amount = amount + #{amount}
 		where prd_title = #{prdTitle}
