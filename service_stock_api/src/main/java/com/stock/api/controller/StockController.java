@@ -17,7 +17,7 @@ public class StockController {
 	StockService stockService;
 	
 	@RequestMapping(method = RequestMethod.GET, path = "/getInfo")
-	public Object getStockInfo(
+	public Object getStockInfo( 
 			@RequestParam("prdTitle") String prdTitle,
 			@RequestParam(value = "optTitle", required = false, defaultValue = "") String optTitle) {
 		DeliveryStockInfo deliveryStockMap = new DeliveryStockInfo();
